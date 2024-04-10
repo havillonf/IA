@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import matplotlib.pyplot as plt
 
 # distância entre a cidade j e i (de colunas para linhas)
 distancias = np.array([
@@ -21,9 +22,9 @@ distancias = np.array([
 ])
 
 qtd_individuos = 100
-tx_mutacao = 0.5
+tx_mutacao = 0.7
 qtd_iteracoes = 1000
-qtd_permutacoes_mutacao = 7
+qtd_permutacoes_mutacao = 3
 
 def calculo_fitness(individuo:np.ndarray):
     distancia_final = 0
@@ -44,52 +45,60 @@ def gerar_populacao(qtd_individuos):
     return populacao
 
 def reproduzir(pai, mae):
-    ponto_de_cruzamento = random.randint(1,len(pai)-2)
+    ponto_de_cruzamento = random.randint(1,len(pai)-1)
     contribuicao_do_pai = pai[:ponto_de_cruzamento]
     contribuicao_da_mae = [cidade for cidade in mae if not cidade in contribuicao_do_pai]
-    
-    return np.concatenate((contribuicao_do_pai, contribuicao_da_mae))
+    filho = np.concatenate((contribuicao_do_pai, contribuicao_da_mae))
+    return filho
 
 def mutacao(individuo):
-    for _ in range(qtd_permutacoes_mutacao):
-        if(random.random() < tx_mutacao):
-            indice_1, indice_2 = gerar_indices_diferentes(14)
-            
-            individuo[indice_2], individuo[indice_1] = individuo[indice_1], individuo[indice_2]
     
+    if(random.random() < tx_mutacao):
+        indice_1, indice_2 = gerar_indices_diferentes(14)
+        individuo[indice_2], individuo[indice_1] = individuo[indice_1], individuo[indice_2]
     return individuo
 
 
 def gerar_indices_diferentes(tamanho):
     
-    indice_1 = random.randint(1, tamanho-1)
-    indice_2 = random.randint(1, tamanho-1)
+    indice_1 = random.randint(0, tamanho-1)
+    indice_2 = random.randint(0, tamanho-1)
     
     while indice_1 == indice_2:
-        indice_2 = random.randint(1, tamanho-1)
+        indice_2 = random.randint(0, tamanho-1)
     
     return indice_1, indice_2
 
 
 populacao = gerar_populacao(qtd_individuos)
 
+indices = np.arange(qtd_individuos)
+
+historico = []
+
 for i in range(qtd_iteracoes):
     nova_populacao = []
 
+    probabilidades = np.array([1/calculo_fitness(x) for x in populacao])
+    probabilidades = probabilidades/np.sum(probabilidades)
+    
     for _ in range(qtd_individuos):
-        indice_1, indice_2 = gerar_indices_diferentes(qtd_individuos)
-
-        pai = populacao[indice_1]
-        mae = populacao[indice_2]
-
-        filho = reproduzir(pai, mae)
-        filho = mutacao(filho)
+        
+        indice_pai = np.random.choice(indices, p=probabilidades)
+        indice_mae = np.random.choice(indices, p=probabilidades)
+        filho = reproduzir(populacao[indice_pai], populacao[indice_mae])
+        # filho = mutacao(filho)
         nova_populacao.append(filho)
-    # print(f"iteração: {i}")
+
     populacao = nova_populacao
+    
+    nova_populacao.sort(key=lambda x:calculo_fitness(x))
+    melhor_distancia = calculo_fitness(nova_populacao[0])
+    historico.append(melhor_distancia)
+    # print(f"melhor fitness: {melhor_distancia}")
+    # print(f"melhor rota: {nova_populacao[0]}")
 
+plt.plot(historico)
+plt.savefig("grafico.png")
 
-nova_populacao.sort(key=lambda x:calculo_fitness(x))
-print(f"melhor fitness: {calculo_fitness(nova_populacao[0])}")
-print(f"melhor rota: {nova_populacao[0]}")
-
+print("terminô")
