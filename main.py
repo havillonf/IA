@@ -21,8 +21,9 @@ distancias = np.array([
 ])
 
 qtd_individuos = 100
-tx_mutacao = 0.99
-qtd_iteracoes = 250
+tx_mutacao = 0.5
+qtd_iteracoes = 1000
+qtd_permutacoes_mutacao = 7
 
 def calculo_fitness(individuo:np.ndarray):
     distancia_final = 0
@@ -50,16 +51,17 @@ def reproduzir(pai, mae):
     return np.concatenate((contribuicao_do_pai, contribuicao_da_mae))
 
 def mutacao(individuo):
-    
-    if(random.random() < tx_mutacao):
-        indice_1, indice_2 = gerar_indices_diferentes(14)
-        
-        individuo[indice_2], individuo[indice_1] = individuo[indice_1], individuo[indice_2]
+    for _ in range(qtd_permutacoes_mutacao):
+        if(random.random() < tx_mutacao):
+            indice_1, indice_2 = gerar_indices_diferentes(14)
+            
+            individuo[indice_2], individuo[indice_1] = individuo[indice_1], individuo[indice_2]
     
     return individuo
 
 
 def gerar_indices_diferentes(tamanho):
+    
     indice_1 = random.randint(1, tamanho-1)
     indice_2 = random.randint(1, tamanho-1)
     
