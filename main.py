@@ -22,9 +22,9 @@ distancias = np.array([
 ])
 
 qtd_individuos = 100
-tx_mutacao = 0.7
+tx_mutacao = 0.002
 qtd_iteracoes = 1000
-qtd_permutacoes_mutacao = 3
+qtd_permutacoes_mutacao = 7
 
 def calculo_fitness(individuo:np.ndarray):
     distancia_final = 0
@@ -52,20 +52,20 @@ def reproduzir(pai, mae):
     return filho
 
 def mutacao(individuo):
-    
-    if(random.random() < tx_mutacao):
-        indice_1, indice_2 = gerar_indices_diferentes(14)
-        individuo[indice_2], individuo[indice_1] = individuo[indice_1], individuo[indice_2]
+    for i in range(qtd_permutacoes_mutacao):
+        if(random.random() < tx_mutacao):
+            indice_1, indice_2 = gerar_indices_diferentes(14)
+            individuo[indice_2], individuo[indice_1] = individuo[indice_1], individuo[indice_2]
     return individuo
 
 
 def gerar_indices_diferentes(tamanho):
     
-    indice_1 = random.randint(0, tamanho-1)
-    indice_2 = random.randint(0, tamanho-1)
+    indice_1 = random.choice(np.arange(0,14))
+    indice_2 = random.choice(np.arange(0,14))
     
     while indice_1 == indice_2:
-        indice_2 = random.randint(0, tamanho-1)
+        indice_2 = random.choice(np.arange(0,14))
     
     return indice_1, indice_2
 
@@ -87,7 +87,7 @@ for i in range(qtd_iteracoes):
         indice_pai = np.random.choice(indices, p=probabilidades)
         indice_mae = np.random.choice(indices, p=probabilidades)
         filho = reproduzir(populacao[indice_pai], populacao[indice_mae])
-        # filho = mutacao(filho)
+        filho = mutacao(filho)
         nova_populacao.append(filho)
 
     populacao = nova_populacao
@@ -95,10 +95,8 @@ for i in range(qtd_iteracoes):
     nova_populacao.sort(key=lambda x:calculo_fitness(x))
     melhor_distancia = calculo_fitness(nova_populacao[0])
     historico.append(melhor_distancia)
-    # print(f"melhor fitness: {melhor_distancia}")
-    # print(f"melhor rota: {nova_populacao[0]}")
+    print(f"melhor fitness: {melhor_distancia}")
+    print(f"melhor rota: {nova_populacao[0]}")
 
 plt.plot(historico)
 plt.savefig("grafico.png")
-
-print("terminô")
